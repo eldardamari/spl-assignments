@@ -28,14 +28,15 @@ class Uni {
         std::vector<Course> courses;
         std::vector<Student> unassignedStudents;
 
-        void readCoursesFile(std::string coursesPath);
-        void readStudentsFile(std::string studentsPath);
+        void readCourses(std::vector< std::vector<std::string> >* lines);
+        void readStudents(std::vector< std::vector<std::string> >* lines);
 
         void printCoursesToFile(std::string coursesOutputPath);
         void printStudentsToFile(std::string studentsOutputPath);
-
-        std::vector< std::vector<std::string> >*
-            getLines(std::string filePath);
+    
+        void getLines(
+                std::string filePath,
+                std::vector< std::vector<std::string> >* lines);
 };
 
 #endif

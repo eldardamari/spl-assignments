@@ -6,14 +6,25 @@
 using namespace std;
 
 
-Uni::Uni(string coursesPath, string studentsPath) {
+Uni::Uni(string coursesPath, string studentsPath):
+    courses(), unassignedStudents() {
+    
+    vector< vector<string> >* coursesLines = new vector< vector<string> >;
 
-    readCoursesFile(coursesPath);
-    readStudentsFile(studentsPath);
+    getLines(coursesPath, coursesLines);
+    readCourses(coursesLines);
+
+    vector< vector<string> >* studentsLines = new vector< vector<string> >;
+
+    getLines(studentsPath, studentsLines);
+    readStudents(studentsLines);
+
+    delete coursesLines;
+    delete studentsLines;
 }
 
 
-vector< vector<string> >* Uni::getLines(string filePath) {
+void Uni::getLines(string filePath,vector< vector<string> >* lines) {
 
     string line;
     ifstream file;
@@ -25,15 +36,12 @@ vector< vector<string> >* Uni::getLines(string filePath) {
         exit(1);  // Terminate with error.
     }
 
-
-    vector< vector<string> >* lines = new vector< vector<string> >;
-
     while (file >> line) {
         vector<string> words;
 
         int b = 0,  // Begin index.
             e = line.find(',');  // End index.
-        while (e != string::npos) {
+        while (e != string::npos) {  // WARNING: Setting e to unsigned causes a wierd index bug.
             words.push_back(line.substr(b, e - b));
 
             b = e+1;
@@ -46,14 +54,10 @@ vector< vector<string> >* Uni::getLines(string filePath) {
     }
 
     file.close();
-    return lines;
 }
 
 
-void Uni::readCoursesFile(string coursesPath) {
-
-    vector< vector<string> >* lines = getLines(coursesPath);
-
+void Uni::readCourses(vector< vector<string> >* lines) {
 
     // Iterate over lines and copy data.
     size_t length = lines->size();
@@ -73,32 +77,28 @@ void Uni::readCoursesFile(string coursesPath) {
         oss2 >> space;
 
         // Push course to appropriate weekday.
-        this->courses.push_back(*new Course(weekday, id, space));
+        this->courses.push_back(Course(weekday, id, space));
     }
 }
 
 
-void Uni::readStudentsFile(string studentPath) {
-
-    vector< vector<string> >* lines = getLines(studentPath);
+void Uni::readStudents(vector< vector<string> >* lines) {
 
     // Iterate over lines and copy data.
     size_t length = lines->size();
     for(unsigned int l=0; l < length; l++) {
+        vector<string> appliedCourses;  // New applied course list.
 
         vector<string> line = (*lines)[l];  // Get line.
-        vector<string>* appliedCourses = new vector<string>;  // New applied course list.
-        vector<unsigned short>* weekdays = new vector<unsigned short>;
 
         string name = line[0];  // Student's name.
 
         size_t size = line.size();
         for(unsigned int word=1; word < size; word++){
-            appliedCourses->push_back(line[word]);
+            appliedCourses.push_back(line[word]);
         }
 
-        this->unassignedStudents.push_back(
-                *new Student(name, appliedCourses));
+        this->unassignedStudents.push_back(Student(name, &appliedCourses));
     }
 }
 
