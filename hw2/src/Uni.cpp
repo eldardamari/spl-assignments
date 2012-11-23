@@ -1,5 +1,6 @@
 #include "Uni.h"
 
+
 using namespace std;
 
 
@@ -36,14 +37,13 @@ Uni :: Uni(bool pgOn) :
 
 
 Uni :: ~Uni() {
-
-    //  Delete all Courses vectors
+    // Delete all Courses.
     this->deleteCourses(this->_mandatoryAutumnCourses);
     this->deleteCourses(this->_mandatorySpringCourses);
     this->deleteCourses(this->_electiveAutumnCourses);
     this->deleteCourses(this->_electiveSpringCourses);
 
-    //  Delete students vector
+    // Delete all students.
     std::vector<Student *>::iterator it_student;
 
     for (it_student = this->_students.begin();
@@ -61,7 +61,7 @@ void Uni :: readCurriculumFile(
         unsigned short &numOfPgElectiveCourses) {
 
     vector< vector<string> > *lines = new vector< vector<string> >;
-    Util::getLines(CURRICULUM_FILE, *lines);
+    getLines(CURRICULUM_FILE, *lines);
 
     vector<string> line = (*lines)[0];
 
@@ -108,7 +108,7 @@ void Uni :: readStudentsFile(
         unsigned short &pgElectiveCourses) {
 
     vector< vector<string> > *lines = new vector< vector<string> >;
-    Util::getLines(STUDENTS_FILE, *lines);
+    getLines(STUDENTS_FILE, *lines);
 
     // Iterate over lines and copy data.
     size_t length = lines->size();
@@ -145,7 +145,7 @@ void Uni :: readStudentsFile(
 void Uni :: readCoursesFile() {
 
     vector< vector<string> > *lines = new vector< vector<string> >;
-    Util::getLines(COURSES_FILE, *lines);
+    getLines(COURSES_FILE, *lines);
 
     // Iterate over lines and copy data.
     size_t length = lines->size();
@@ -164,40 +164,38 @@ void Uni :: readCoursesFile() {
         istringstream oss2(line[4]);
         oss2 >> minimumGrade;
 
-        Course* ptr_course;
-
         if (department.compare(ELECTIVE) == 0) {
             if (semester % 2 == 1) {  // Autumn elective course.
 
-                ptr_course = new ElCourse(name, semester, minimumGrade);
-                this->_electiveAutumnCourses.push_back(ptr_course);
+                this->_electiveAutumnCourses.push_back(
+                        new ElCourse(name, semester, minimumGrade));
 
             } else { // Spring elective course.
 
-                ptr_course = new ElCourse(name, semester, minimumGrade);
-                this->_electiveSpringCourses.push_back(ptr_course);
+                this->_electiveSpringCourses.push_back(
+                        new ElCourse(name, semester, minimumGrade));
             }
         } else if (department.compare(CS) == 0) {
             if (semester % 2 == 1) {  // Autumn mandatory course.
 
-                ptr_course = new CsCourse(name, semester, minimumGrade);
-                this->_mandatoryAutumnCourses.push_back(ptr_course);
+                this->_mandatoryAutumnCourses.push_back(
+                        new CsCourse(name, semester, minimumGrade));
 
             } else {  // Spring mandatory course.
 
-                ptr_course = new CsCourse(name, semester, minimumGrade);
-                this->_mandatorySpringCourses.push_back(ptr_course);
+                this->_mandatorySpringCourses.push_back(
+                    new CsCourse(name, semester, minimumGrade));
             }
         } else if (name.compare(PG) == 0) {
             if (semester % 2 == 1) {  // Autumn course.
 
-                ptr_course = new PgCourse(name, semester, minimumGrade);
-                this->_mandatoryAutumnCourses.push_back(ptr_course);
+                this->_mandatoryAutumnCourses.push_back(
+                    new PgCourse(name, semester, minimumGrade));
 
             } else {  // Spring course.
 
-                ptr_course = new PgCourse(name, semester, minimumGrade);
-                this->_mandatorySpringCourses.push_back(ptr_course);
+                this->_mandatorySpringCourses.push_back(
+                    new PgCourse(name, semester, minimumGrade));
             }
         }
     }
@@ -217,7 +215,7 @@ void Uni :: simulate() {
                 it_student != this->_students.end();
                 ++it_student) {
 
-            Util::writeToStudentsLogFile(
+            writeToStudentsLogFile(
                     (**it_student).getStudentId(), "", "", DENIED);
         }
     }
@@ -227,7 +225,7 @@ void Uni :: simulate() {
             currentSemester++) {
 
         // Log semester number.
-        Util::writeNumOfSemesterToFile(currentSemester);
+        writeNumOfSemesterToFile(currentSemester);
 
         // Registers, teaches and promotes students for this semester.
         this->registerStudentsToCourses(currentSemester);
@@ -250,10 +248,10 @@ void Uni :: registerStudentsToCourses(unsigned short currentSemester) {
         electiveSemesterCourses = &(this->_electiveSpringCourses);
     }
 
-    // Iterate over all students, and register those who finished their
-    // last semester succesfully.
-    // NOTE: Doesn't register Pg Students to any course if MALAG did not
-    // approve their studies.
+    /* Iterate over all students, and register those who finished their
+     * last semester succesfully.
+     * NOTE: Doesn't register Pg Students to any course if MALAG did not
+     * approve their studies. */
     vector<Student *>::iterator it_student;
 
     for (it_student = this->_students.begin();
@@ -327,9 +325,9 @@ void Uni :: graduate() {
             PROFILE_IMAGE_SIZE,
             numOfStudents*PROFILE_IMAGE_SIZE);*/
 
-    // Iterate all students in vector,
-    // log their graduations status to file,
-    // and generate their profile image.
+    /* Iterate all students in vector,
+     * log their graduations status to file,
+     * and generate their profile image. */
     vector<Student *>::iterator it_student;
 
     for (it_student = this->_students.begin();
@@ -341,7 +339,7 @@ void Uni :: graduate() {
                 (**it_student).getCurrentSemester() == _semesters -1) {
 
             // Log to file.
-            Util::writeToStudentsLogFile(
+            writeToStudentsLogFile(
                     (**it_student).getStudentId(), "", "", GRADUATED); 
 
             /*if ((**it_student).getDepartment() == CS) {
@@ -352,7 +350,7 @@ void Uni :: graduate() {
         } else {
 
             // Log to file.
-            Util::writeToStudentsLogFile(
+            writeToStudentsLogFile(
                     (**it_student).getStudentId(), "", "", NOT_GRADUATED);
 
             /*if ((**it_student).getDepartment() == CS) {
@@ -361,9 +359,9 @@ void Uni :: graduate() {
                 saveGreyscaleImage(pgGraduationImage, **it_student); 
             }*/
         }
+    }
 
     // TODO save images on root project folder
-    }
 }
 
 
