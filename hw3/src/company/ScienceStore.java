@@ -3,10 +3,9 @@
  *
  * @author Eldar Damari, Ory Band
  */
-//package company;
 
+package company;
 
-import java.util.Comparator;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.ListIterator;
@@ -28,20 +27,22 @@ public class ScienceStore implements ScienceStoreInterface {
     /**
      * Besides initializing members,
      * sorts packages by amount, from largest to smallest,
-     * and sorts scientists by price, from most expensive to cheapest.
+     * and then by price, from cheapest to most expensive.
+     * Scientists and labs are sorted by price the same way.
      */
     public ScienceStore( 
             HashMap<String, ArrayList<EquipmentPackage>> equipmentPackages,
             HashMap<String, ArrayList<Scientist>> scientists,
             HashMap<String, ArrayList<Laboratory>> laboratories) {
 
-        // FIXME Produces warnings since arguments are unchecked.
-        this.equipmentPackages = new HashMap(equipmentPackages);
-        this.scientists = new HashMap(scientists);
-        this.laboratories = new HashMap(laboratories);
+        this.equipmentPackages = equipmentPackages;
+        this.scientists = scientists;
+        this.laboratories = laboratories;
 
-        // Sort equipment (amount and price) from largest to smallest,
+        // Sort equipment (by amount, then by price) from largest to smallest,
         // and sorts scientists & labs from cheapest to most expensive.
+        //
+        // See compareTo() implementation in corresponding classes.
         for (Map.Entry<String, ArrayList<EquipmentPackage>> entry
                 : this.equipmentPackages.entrySet()) {
 
@@ -82,14 +83,14 @@ public class ScienceStore implements ScienceStoreInterface {
             ListIterator<EquipmentPackage> it =
                 this.equipmentPackages.get(requestedType).listIterator();
 
-            // Search for the closests matching overexceeding package size.
+            // Search for the closest matching overexceeding package size.
             boolean isBiggerPackage = false,
                     isPackageTooSmall = false;
 
             // Search for bigger packages.
             while (it.hasNext() && ! isPackageTooSmall) {
                 equipmentPackage = it.next();
-
+                
                 if (equipmentPackage.getAmount() >= requestedAmount) {
                     isBiggerPackage = true;
                 } else {
@@ -99,6 +100,7 @@ public class ScienceStore implements ScienceStoreInterface {
 
             // Buy several small packages if there are no bigger ones.
             if ( ! isBiggerPackage ) {
+
                 if (it.hasPrevious()) {
                     it.previous();
 
@@ -111,7 +113,7 @@ public class ScienceStore implements ScienceStoreInterface {
                         this.PurchaseSingleEquipmentPackage(
                                 repository, statistics, equipmentPackage);
 
-                        it.remove();
+                        it.remove();  // Remove package from store.
                     }
 
                     // Special case where there aren't enough small packages to
@@ -129,18 +131,23 @@ public class ScienceStore implements ScienceStoreInterface {
                 }
             // If there's a big enough package, purchase it.
             } else {
-                this.PurchaseSingleEquipmentPackage(
-                        repository, statistics, it.previous());
+                EquipmentPackage e = it.previous();
 
-                it.remove();
+                // Get the last 'bigger' package if there was one.
+                if (isPackageTooSmall) {
+                    e = it.previous();
+                }
+
+                this.PurchaseSingleEquipmentPackage(repository, statistics, e);
+                it.remove();  // Remove package from store
             }
         }
     }
 
 
     /**
-     * Adds equipment package to repository, charges budget & updates statistics,
-     * and decrement equipment amount from store (we have 1 less of it in store).
+     * Adds equipment package to repository, charges budget & updates statistics.
+     * Note this function is synchronized to prevent bad statistics.
      *
      * @param repository for updating repository.
      * @param statistics for charging from the budget.
@@ -152,9 +159,10 @@ public class ScienceStore implements ScienceStoreInterface {
             EquipmentPackage equipmentPackage) {
 
         int amount = equipmentPackage.getAmount();
-        String equipmentPackageType = equipmentPackage.getType();
+        String type = equipmentPackage.getType();
+
         statistics.addPurchasedEquipment(equipmentPackage);
-        repository.addEquipmentToRepository(equipmentPackageType, amount);
+        repository.addEquipmentToRepository(type, amount);
     }
 
 
@@ -185,7 +193,6 @@ public class ScienceStore implements ScienceStoreInterface {
                 while (it.hasNext() && requestedAmount > 0) {
                     scientist = it.next();
 
-                    int price = scientist.getPrice();
                     statistics.addPurchasedScientist(scientist);
                     headOfLaboratory.addScientists(1);
 
@@ -227,7 +234,6 @@ public class ScienceStore implements ScienceStoreInterface {
 
             statistics.addPurchasedLaboratory(laboratory);
 
-            int price = laboratory.getPrice();
             String name = laboratory.getName();
             String specialization = laboratory.getSpecialization();
             int numberOfScientists = laboratory.getNumOfScientists();
@@ -244,49 +250,6 @@ public class ScienceStore implements ScienceStoreInterface {
             System.out.println(
                     "Science Store: No laboratory for requested specialization '"
                     + requestedSpecialization + "'.");
-        }
-    }
-
-
-    /**
-     * @param requestedEquipment equipment type (Microscope, burner, etc.)
-     *
-     * @return True if EquipmentPackage is in store (not just in stock).
-     **/
-    public boolean isEquipmentPackageEmpty(EquipmentPackage EquipmentPackage) {
-        
-        if (this.equipmentPackages.containsKey(EquipmentPackage.getType())) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-
-    /**
-     * @param requestedSpecialization Scientist specialization.
-     *
-     * @return True if scientist is in store (not just in stock).
-     **/
-    public boolean isScientistsEmpty(String specialization) {
-    
-        if (this.scientists.containsKey(specialization)) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-
-    /**
-     * @param requestedSpecialization Laboratory specialization.
-     *
-     * @return True if laboratory is in store (not just in stock).
-     **/
-    public boolean isLaboratoriesEmpty(String specialization) {
-        
-        if (this.laboratories.containsKey(specialization)) {
-            return false;
-        } else {
-            return true;
         }
     }
 

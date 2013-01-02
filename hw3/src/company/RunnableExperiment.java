@@ -1,105 +1,106 @@
-//package company;
+/** @author Eldar Damari, Ory Band */
 
-import java.io.*;
-import java.util.*;
+package company;
+
+import java.util.Observable;
+import java.util.Date;
+import java.lang.Runnable;
 
 
 public class RunnableExperiment extends Observable implements Runnable {
 
     private Experiment experiment;
-    private long experimentRealRunTime;
-    private Date date;
+    private long runTime;
     private ChiefScientist chief;
 
 
-    public RunnableExperiment(Experiment experiment, ChiefScientist chiefScientist) {
+    public RunnableExperiment(
+            Experiment experiment, ChiefScientist chiefScientist) {
+
         this.experiment = experiment;
         addObserver(chiefScientist);
-        this.experimentRealRunTime = 0;
+        this.runTime = 0;
         this.chief = chiefScientist;
     }
 
 
     public void run() {
 
-        System.out.println("Experiment start: " + this.experiment.getExperimentId());
+        System.out.println(
+                "#" + this.experiment.getId() + " started.");
 
-        // Experiment still in progress
-        while (experiment.getExperimentRunTime() != 0) {
+        // Experiment still in progress.
+        while (experiment.getCurrentRunTime() > 0) {
 
-            this.date = new Date();
-            this.experimentRealRunTime += date.getTime();
+            this.runTime += new Date().getTime();
 
             Repository repo = this.chief.getRepository();
-            //System.out.println(">>>" + this.chief.getRepository().toString() + " - "+this.experiment.getExperimentId());
 
-            repo.aquireEquipment(
-                    this.experiment.getRequiredEquipment(), this.experiment); 
+            repo.acquireEquipment(this.experiment.getRequiredEquipment()); 
 
-            //System.out.println("---" + this.chief.getRepository().toString() +  " - "+this.experiment.getExperimentId());
-
-            // Sleep 8 hours
-            try {
-                // Sleep 8 hours (1 hour = 100 miliseconds).
-                Thread.currentThread().sleep(800);
+            try {  // Work 8 hours.
+                Thread.sleep(800);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
 
-            if (this.experiment.getExperimentRunTime() <= 8) {
+            // Return equipment taken for the day.
+            this.chief.getRepository().releaseEquipment(
+                    this.experiment.getRequiredEquipment());
 
-                this.experiment.setExperimentRunTime(0);
+            if (this.experiment.getCurrentRunTime() > 8) {
 
-                //Release equipment back to repo - if someone is buying right  now?
-                //problem with returning & purchasing? - check sync carefully in repo!!
+                this.experiment.setCurrentRunTime(
+                        this.experiment.getCurrentRunTime() - 8);
 
-                this.chief.getRepository().releaseEquipment
-                    (this.experiment.getRequiredEquipment());
+                this.runTime -= new Date().getTime();
 
-                date = new Date();
-                this.experimentRealRunTime = 
-                    date.getTime() - this.experimentRealRunTime;
-
-                // reward claculation and updating statistics
-                if (this.experimentRealRunTime <= 
-                        ((this.experiment.getExperimentRunTime() / 100.0) * 115)){
-                    // reward gained.
-                    this.chief.getStatistics().addReward(this.experiment.getExperimentReward());
-
-                } else {
-                    // 10% of reward gained.
-                    this.chief.getStatistics().addReward((this.experiment.getExperimentReward() / 100.0) * 10);
-
-                }
-                System.out.println("Experiment End : " + this.experiment.getExperimentId());
-                System.out.println("Experiment End with run time:  " + this.experimentRealRunTime); 
-        
-                // Notify to observers that experiment is done
-                setChanged();
-                notifyObservers(this.experiment.getExperimentId());
-
-            } else {
-
-                this.experiment.setExperimentRunTime
-                    (this.experiment.getExperimentRunTime() - 8);
-                // Release equipment back to repository. 
-                this.chief.getRepository().releaseEquipment
-                    (this.experiment.getRequiredEquipment());
-
-                date = new Date();
-                this.experimentRealRunTime -= date.getTime();
-
-                // Sleep for 16 hours ~ 16,000 miliseconds
-                try{
-                Thread.currentThread().sleep(1600);
+                try {  // Sleep 16 hours.
+                    Thread.sleep(1600);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+            } else {  // Last hours of experiment.
+                this.experiment.setCurrentRunTime(0);
+
+                this.runTime = new Date().getTime() - this.runTime;
+
+                // Reward calculation.
+                boolean fullReward;
+                if (this.runTime <= this.experiment.getRequiredRunTime() * 115) {
+
+                    // 100% of reward gained.
+                    fullReward = true;
+
+                    int reward = this.experiment.getReward();
+                    this.chief.getStatistics().addReward(reward);
+
+                } else {
+                    // 10% of reward gained.
+                    fullReward = false;
+
+                    int reward = this.experiment.getReward();
+                    this.chief.getStatistics().addReward(reward / 10);
+                }
+
+                System.out.print(
+                        "#" + this.experiment.getId() + " ended: "
+                        + (this.runTime / 100) + " hours, ");
+
+                if (fullReward) {
+                    System.out.println("100% reward gained.");
+                } else {
+                    System.out.println("10% reward gained.");
+                }
+        
+                // Notify observers (ChiefScientist) that experiment is complete.
+                setChanged();
+                notifyObservers(this.experiment.getId());
             }
         }
     }
 
-    // Getters
+
     public Experiment getExperiment() {
         return this.experiment;
     }
@@ -109,13 +110,12 @@ public class RunnableExperiment extends Observable implements Runnable {
 
         StringBuilder result = new StringBuilder();
 
-        String NEW_LINE = System.getProperty("line.separator");
+        String N = System.getProperty("line.separator");
 
-        result.append("______________________________________" + NEW_LINE);
-        result.append("         ---Runnable Experiment---:" + NEW_LINE);
-
-        result.append("Experiment: " + NEW_LINE + this.experiment.toString() + NEW_LINE);
-        result.append("Real Run Time: " + this.experimentRealRunTime + NEW_LINE);
+        result.append(N);
+        result.append("Runnable Experiment:" + N);
+        result.append("Run Time: " + this.runTime + N);
+        result.append(this.experiment.toString() + N);
 
         return result.toString();
     }

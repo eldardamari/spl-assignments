@@ -1,7 +1,8 @@
-//package company;
+/** @author Eldar Damari, Ory Band */
 
-import java.io.*;
-import java.util.*;
+package company;
+
+import java.util.ArrayList;
 
 
 public class Statistics {
@@ -30,10 +31,11 @@ public class Statistics {
     }
 
     // Setters
-    // TODO Remove this, and set budget in constructor (used in util).
     public void setBudget(int i) {
         this.budget = i;
     }
+
+
     public void increaseFinishedExperiment(Experiment experiment) {
         this.experiments.add(experiment);
     }
@@ -70,21 +72,27 @@ public class Statistics {
     public String toString() {
 
         StringBuilder result = new StringBuilder();
-        String NEW_LINE = System.getProperty("line.separator");
+        String N = System.getProperty("line.separator");
 
-        result.append("______________________________________" + NEW_LINE);
-        result.append("           ---Statistics---: " + NEW_LINE);
-        result.append("Budget: " + this.budget + NEW_LINE);
-        result.append("Reward: " + this.rewards + NEW_LINE);
-        result.append("Money Spent: " + this.moneySpent + NEW_LINE);
+        result.append(N);
+        result.append("Statistics:" + N + N);
+
         result.append("Finished Experiments: " + 
-                this.experiments.toString() + NEW_LINE);
+                this.experiments.toString() + N + N);
+
         result.append("Equipment Packages Purchased : " + 
-                this.equipmentPackagesPurchased.toString() + NEW_LINE);
-        result.append("Laboratoris Purchased: " + 
-                this.laboratoriesPurchased.toString() + NEW_LINE);
+                this.equipmentPackagesPurchased.toString() + N + N);
+
         result.append("Scientists Purchased: " + 
-                this.scientistsPurchased.toString() + NEW_LINE);
+                this.scientistsPurchased.toString() + N + N);
+
+        result.append("Laboratories Purchased: " + 
+                this.laboratoriesPurchased.toString() + N + N);
+
+        result.append("Budget Summary: ");
+        result.append("+" + this.rewards + "$, ");
+        result.append("-" + this.moneySpent + "$, ");
+        result.append(this.budget + "$ budget total.");
 
         return result.toString();
     }

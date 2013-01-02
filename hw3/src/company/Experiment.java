@@ -1,8 +1,9 @@
-//package company;
+/** @author Eldar Damari, Ory Band */
 
-import java.util.Comparator;
-import java.io.*;
-import java.util.*;
+package company;
+
+import java.util.HashMap;
+import java.util.ArrayList;
 
 
 public class Experiment {
@@ -13,32 +14,33 @@ public class Experiment {
     private final int reward;
 
     private ArrayList<Integer> prerequirementsExperiments;
-    private int runTimeInHours;
-    private int runTimeInHoursPrint;
+    private int currentRunTime;  // hours.
+    private final int requiredRunTime;  // hours.
     private String status;
 
 
     public Experiment(
             String id,
-            ArrayList<Integer> preExperiments,
+            ArrayList<Integer> requiredExperiments,
             String specialization,
             HashMap<String,Integer> requiredEquipment,
-            int runtime,
+            int runTime,
             int reward,
             String status) {
 
         this.id = id;
         this.specialization = specialization;
-        this.prerequirementsExperiments = preExperiments;
+        this.prerequirementsExperiments = requiredExperiments;
         this.requiredEquipment = requiredEquipment;
         this.reward = reward;
-        this.runTimeInHours = runtime;
-        this.runTimeInHoursPrint = runtime;
+        this.currentRunTime = runTime;
+        this.requiredRunTime = runTime;
         this.status = status;
     }
 
 
-    public String getExperimentId() {
+    // Getters
+    public String getId() {
         return this.id;
     }
 
@@ -54,11 +56,15 @@ public class Experiment {
         return this.requiredEquipment;
     }
 
-    public int getExperimentRunTime() {
-        return this.runTimeInHours;
+    public int getRequiredRunTime() {
+        return this.requiredRunTime;
     }
 
-    public int getExperimentReward() {
+    public int getCurrentRunTime() {
+        return this.currentRunTime;
+    }
+
+    public int getReward() {
         return this.reward;
     }
 
@@ -66,32 +72,31 @@ public class Experiment {
         return this.status;
     }
 
+
     // Setters
-    public void setExperimentRunTime(int runtime){
-        this.runTimeInHours = runtime;
+    public void setCurrentRunTime(int currentRunTime) {
+        this.currentRunTime = currentRunTime;
     }
-    public void setExperimentStatus(String status) {
+
+    public void setStatus(String status) {
         this.status = status;
     }
 
 
-
-    public String toString(){
+    public String toString() {
 
         StringBuilder result = new StringBuilder();
-        String NEW_LINE = System.getProperty("line.separator");
+        String N = System.getProperty("line.separator");
 
-        result.append("______________________________________" + NEW_LINE);
-        result.append("Experiment id: " + id + NEW_LINE);
-        result.append("Specialization: " + specialization + NEW_LINE);
-        result.append("PrerequirementsExperiments: " +
-                prerequirementsExperiments.toString() + NEW_LINE);
+        result.append(N);
+        result.append("#" + id + ", ");
+        result.append(this.status + ", ");
+        result.append(this.requiredRunTime + " hours, ");
+        result.append(this.reward + "$, ");
+        result.append(this.specialization + ", ");
+        result.append(this.prerequirementsExperiments.toString() + ", ");
+        result.append(this.requiredEquipment.toString());
 
-        result.append("Required Equipment: " + this.requiredEquipment.toString() + NEW_LINE);
-        result.append("Run Time: " + runTimeInHoursPrint + NEW_LINE);
-        result.append("Reward: " + reward + NEW_LINE);
-        result.append("Status: " + status + NEW_LINE);
-        result.append("______________________________________" + NEW_LINE);
         return result.toString();
     }
 }
